@@ -125,6 +125,31 @@ The fastest algorithm known for finding discrete logarithms is discussed in @Dis
 
 = Current Landscape
 == Families of Post Quantum Algorithms
+
+The fundamental challenge that quantum computers pose to classical cryptographic algorithms is that they break many of the primitives which they rely on, such as the discrete log problem. As such, the challenge of developing post-quantum cryptography, or cryptography which is resistant to quantum computers, is developing new primitives which are resistant to quantum computers. 
+
+Several such proposed problems exist, although the theoretical basis for them is quite involved. A broad overview is given below.
+
+=== Lattice-Based
+
+A "lattice" is a structure formed by combining a set of vectors in n-dimensional space. Generally, a lattice is represented as an n x n matrix of vectors which form the "basis" of the lattice. The lattice itself is formed by the infinite number of linear combinations of these vectors. An example of a 2-dimensional lattice is shown in @fig-lattice:
+
+#figure(image("lattice.png"),caption:[A 2-dimensional lattice @Bernstein2009],) <fig-lattice>
+
+Lattices form the basis for a number of hard cryptographic problems which are believed to be quantum resistant. The most basic of these problems is the so-called "shortest vector problem", which involves finding the shortest vector within a lattice. Currently the most promising of these problems is called "Learning With Errors", or LWE - It involves recovering a "secret" vector from the lattice modified by small random errors @Bernstein2009. Other such variations exist like Ring LWE, which enjoys similar hardness guarantees as LWE, but with improved computational efficiency @LyubashevskyPeikertRegev2012.
+
+=== Code-Based
+
+Code-based cryptography uses error-correcting codes to protect messages. A message is first encoded as a codeword, and then random errors are added before sending. The receiver, who knows the secret structure of the code, can correct the errors and recover the original message. An attacker, however, faces the computationally hard problem of decoding a general code, which remains difficult even for quantum computers @Bernstein2009. Code-based algorithms are generally quite fast, but are less favored due to their larger key sizes @chen2016report.
+
+=== Multivariate Polynomial-Based
+
+Multivariate cryptography relies on the hardness of solving a system of quadratic equations over a finite field @Bernstein2009. In such schemes, the private key is a structured set of transformations to a system of equations which are easily invertible. By applying such transformations, the system of equations appears random, and is no longer invertible without this knowledge. Multivariate-based schemes generally excel in digital signature algorithms, but also suffer from longer key sizes @Bernstein2009, @chen2016report.
+
+=== Hash-Based
+
+Hash-based schemes are digital signature schemes that rely on the security of cryptographic hash functions. Since the properties of hash functions are well studied, the advantage of these schemes are both the reliability of their hardness guarantees, and their ability to leverage existing hardware optimizations for classical hashing algorithms @Bernstein2009. Hash-based schemes typically employ structures called Merkle Trees to create digital signatures. A Merkle Tree is simply a tree formed by iteratively hashing the concatenation of child nodes, where leaf nodes are hashes of the data blocks themselves. The root of such a tree, then, forms a signature which uniquely identifies the entire tree, and thus the data which it is built upon @Bernstein2009
+
 === Algorithms that Aren't Broken
 While it is true that with a sufficiently powerful computer, one could break algorithms whose security depends on the difficulty of factoring large integers or solving the discrete logarithm problem, such as RSA, we already have other algorithms that are not yet known to be broken by quantum algorithms @Bernstein2009. In fact, symmetric algorithms, or secret key cryptography, are generally accepted to not really be affected by quantum computers. Though there will be a need to increase the key size (which is more or less true across the board), today's best secret key algorithms will seem to also be the best secret key algorithms in a quantum world @Bernstein2009. Work has been done to show exactly how much of an impact quantum computing will have on AES, for example, and while quantum computers will still do better than classical ones in theory, AES remains a useful post quantum algorithm, given an increase in key size @quantum-aes.
 
@@ -240,7 +265,7 @@ In summary, attacks such as HNDL (Harvest Now Decrypt Later) demonstrate that qu
 
 == Implications and Considerations
 
-Post-quantum cryptographic algorithms pose a number of novel challenges to the network designer. To provide a point of comparison, the average ECDH (Elliptic-Curve Diffie-Hellman) key size is on the scale of tens of bytes; Post-quantum algorithms, on the other hand, range from hundreds to even thousands of bytes @marin2023. In the context of networking, these larger key sizes mean more packet fragmentation. The immediate impact of this is additional round trips, but an increase in the number of packets places more load on routers and switches and raises the likelihood of packet loss or retransmission, further compounding delays. While this may not be noticeable degradation in performance on the fastest of connections, the added latency on slower connections can rapidly accumulate. This effect is particularly evident in TLS, where larger key sizes may introduce multiple extra round trips per handshake, potentially crippling performance on slower connections.
+Despite the urgency of their implementation, post-quantum cryptographic algorithms pose a number of novel challenges to the network designer. To provide a point of comparison, the average ECDH (Elliptic-Curve Diffie-Hellman) key size is on the scale of tens of bytes; Post-quantum algorithms, on the other hand, range from hundreds to even thousands of bytes @marin2023. In the context of networking, these larger key sizes mean more packet fragmentation. The immediate impact of this is additional round trips, but an increase in the number of packets places more load on routers and switches and raises the likelihood of packet loss or retransmission, further compounding delays. While this may not be noticeable degradation in performance on the fastest of connections, the added latency on slower connections can rapidly accumulate. This effect is particularly evident in TLS, where larger key sizes may introduce multiple extra round trips per handshake, potentially crippling performance on slower connections.
 
 Beyond the increase in network traffic, post-quantum algorithms also demand far more computational resources than traditional cryptography. Similar to network overhead, a "feast or famine" scenario can arise: performance degradation may be negligible on high-end hardware but becomes a significant challenge in resource-constrained environments. For example, one study comparing post-quantum algorithms found that while high-performance servers incurred less than 5% additional latency, certain algorithms on low-power devices required up to 12× more computation to achieve equivalent NIST security levels @cryptography9020032. So, while the backbone of the internet may handle post-quantum cryptography with minimal impact, consumer devices and IoT hardware could face substantial performance bottlenecks.
 
